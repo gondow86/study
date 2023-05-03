@@ -1,0 +1,153 @@
+#include "lib64.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+	int i, j, k, l, nx, ny;
+	BMPIMAGE im;
+    BMPIMAGE im2; 
+    BMPIMAGE im_out;                     //BMP�摜�̏�⪓���ϐ�
+	float** inputimageR;
+    float** inputimageR2;
+	float** outimageR;
+    float** outimageR2;
+	float** inputimageG;
+    float** inputimageG2;
+	float** outimageG;
+    float** outimageG2;
+	float** inputimageB;
+    float** inputimageB2;
+	float** outimageB;
+    float** outimageB2;
+
+	char filename[512];
+    char filename2[512];
+	// printf("Sample Program for Filtering \n");
+	printf("Input two Images Filename (BMP) : ");
+	scanf("%s %s", filename, filename2, 500);
+	getchar();
+
+	//BMP�摜���w�肵���t�@�C������ǂݍ���
+	im = Input_BMP(filename);
+	if (im == 0)
+	{
+		printf("No such file as '%s'\n", filename);
+		exit(0);
+	}
+
+    im2 = Input_BMP(filename2);
+    if(im2 == 0)
+    {
+        printf("No such file as '%s'\n", filename2);
+        exit(0);
+    }
+
+	ny = im->height; nx = im->width;   // �摜�̃T�C�Y��ǂݍ��⾉摜��⩂�l��
+
+    im_out = Generate_BMP(filename, ny, 2 * nx);
+
+	inputimageR = f2d(ny, nx);  // ny�s nx���float�^�̂Q�����z����m��
+	outimageR = f2d(ny, nx);    // ny�s nx���float�^�̂Q�����z����m��
+	inputimageG = f2d(ny, nx);  // ny�s nx���float�^�̂Q�����z����m��
+	outimageG = f2d(ny, nx);    // ny�s nx���float�^�̂Q�����z����m��
+	inputimageB = f2d(ny, nx);  // ny�s nx���float�^�̂Q�����z����m��
+	outimageB = f2d(ny, nx);    // ny�s nx���float�^�̂Q�����z����m��
+
+    inputimageR2 = f2d(ny, nx);  // ny�s nx���float�^�̂Q�����z����m��
+    outimageR2 = f2d(ny, nx);
+	inputimageG2 = f2d(ny, nx);  // ny�s nx���float�^�̂Q�����z����m��
+    outimageG2 = f2d(ny, nx);
+	inputimageB2 = f2d(ny, nx);  // ny�s nx���float�^�̂Q�����z����m��
+    outimageB2 = f2d(ny, nx);
+
+	//�摜�̉�f�l��float�^��2�����z��ɃR�s�[�i�����̂��߁j
+	for (i = 0; i < ny; i++)
+		for (j = 0; j < nx; j++)
+			inputimageR[i][j] = (float)im->red[i][j];
+	for (i = 0; i < ny; i++)
+		for (j = 0; j < nx; j++)
+			inputimageG[i][j] = (float)im->green[i][j];
+	for (i = 0; i < ny; i++)
+		for (j = 0; j < nx; j++)
+			inputimageB[i][j] = (float)im->blue[i][j];
+
+    for (i = 0; i < ny; i++)
+		for (j = 0; j < nx; j++)
+			inputimageR2[i][j] = (float)im2->red[i][j];
+	for (i = 0; i < ny; i++)
+		for (j = 0; j < nx; j++)
+			inputimageG2[i][j] = (float)im2->green[i][j];
+	for (i = 0; i < ny; i++)
+		for (j = 0; j < nx; j++)
+			inputimageB2[i][j] = (float)im2->blue[i][j];
+	/////////////////////////////////////////////////////////////////////
+	for (i = 0; i < ny; i++) {
+		for (j = 0; j < nx; j++) {
+			outimageR[i][j] = inputimageR[i][j];///inputimage�̒l�����̂܂�outimage�֊i�[
+			outimageG[i][j] = inputimageG[i][j];///���ۂɂ̓t�B���^�����Ȃǂ��������̂�outimage�֊i�[
+			outimageB[i][j] = inputimageB[i][j];
+		}
+	}
+    for (i = 0; i < ny; i++) {
+        for (j = 0; j < nx; j++) {
+            outimageR2[i][j] = inputimageR2[i][j];
+            outimageG2[i][j] = inputimageG2[i][j];
+            outimageB2[i][j] = inputimageB2[i][j];
+        }
+    }
+    /////////////////////////////////////////////////////////////////////////////
+	
+	 //float�^��2�����z�⩂�IMAGE�\���̃f�[�^�ɃR�s�[�i�Z�[�u���邽�߁j
+	//�R�s�[����O�ɁC�O�ȉ��̒l�͂O�ɁC�Q�T�T�ȏ�̒l�͂Q�T�T�ɂ��Ă���D
+	//�����������q�f�a���ꂼ��ɂ��ČJ��Ԃ��Ă���
+	for (i = 0; i < ny; i++) {
+		for (j = 0; j < nx; j++) {
+			if (outimageB[i][j] > 255.0) outimageB[i][j] = 255.0;
+			if (outimageB[i][j] < 0.0) outimageB[i][j] = 0.0;
+			im_out->blue[i][j] = (unsigned char)(outimageB[i][j]);
+		}
+	}
+    for (i = 0; i < ny; i++) {
+		for (j = 0; j < nx; j++) {
+			if (outimageB2[i][j] > 255.0) outimageB2[i][j] = 255.0;
+			if (outimageB2[i][j] < 0.0) outimageB2[i][j] = 0.0;
+			im_out->blue[i][nx + j] = (unsigned char)(outimageB2[i][j]);
+		}
+	}
+
+	for (i = 0; i < ny; i++) {
+		for (j = 0; j < nx; j++) {
+			if (outimageR[i][j] > 255.0) outimageR[i][j] = 255.0;
+			if (outimageR[i][j] < 0.0) outimageR[i][j] = 0.0;
+			im_out->red[i][j] = (unsigned char)(outimageR[i][j]);
+		}
+	}
+    for (i = 0; i < ny; i++) {
+		for (j = 0; j < nx; j++) {
+			if (outimageR2[i][j] > 255.0) outimageR2[i][j] = 255.0;
+			if (outimageR2[i][j] < 0.0) outimageR2[i][j] = 0.0;
+			im_out->red[i][nx + j] = (unsigned char)(outimageR2[i][j]);
+		}
+	}
+	for (i = 0; i < ny; i++) {
+		for (j = 0; j < nx; j++) {
+			if (outimageG[i][j] > 255.0) outimageG[i][j] = 255.0;
+			if (outimageG[i][j] < 0.0) outimageG[i][j] = 0.0;
+			im_out->green[i][j] = (unsigned char)(outimageG[i][j]);
+		}
+	}
+    for (i = 0; i < ny; i++) {
+		for (j = 0; j < nx; j++) {
+			if (outimageG2[i][j] > 255.0) outimageG2[i][j] = 255.0;
+			if (outimageG2[i][j] < 0.0) outimageG2[i][j] = 0.0;
+			im_out->green[i][nx + j] = (unsigned char)(outimageG2[i][j]);
+		}
+	}
+    
+	//BMP�摜�Ƃ��ăt�@�C���ɃZ�[�u
+	printf("Output Image Filename (BMP)  = ");
+	scanf("%s", filename,500);
+	getchar();
+	Output_BMP(im_out, filename);
+}
